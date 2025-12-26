@@ -22,7 +22,7 @@ jobs:
       - name: Ejecutar LovaGame
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: "@RodrigoGameBot"
+          TELEGRAM_CHAT_ID: "@lovagame_rodrigo"
         run: mvn clean compile exec:java -Dexec.mainClass="com.rodrigo.lovagame.Main"
 
       - name: Guardar cambios en historial.txt
