@@ -1,46 +1,65 @@
 package com.rodrigo.lovagame;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 
 public class Notificador {
 
+    // GitHub Secrets
     private static final String TOKEN = System.getenv("TELEGRAM_TOKEN");
     private static final String CHAT_ID = System.getenv("TELEGRAM_CHAT_ID");
-    // Función para enviar mensajes
-    public void enviar(String mensaje) {
+
+    // FOTO + TEXTO + BOTN
+    public void enviarFoto(String urlImagen, String textoCaption, String urlOferta) {
         try {
-         
-            String mensajeSeguro = URLEncoder.encode(mensaje, StandardCharsets.UTF_8);
+            if (TOKEN == null || CHAT_ID == null) {
+                System.out.println("❌ ERROR: Faltan las variables TOKEN o CHAT_ID.");
+                return;
+            }
 
-            //CREAR LA URL:
-            //Pegamos el Token, el ID y el mensaje para formar la dirección de envío.
-            String urlString = "https://api.telegram.org/bot" + TOKEN + "/sendMessage?chat_id=" + CHAT_ID + "&text=" + mensajeSeguro;
+            String captionSegura = textoCaption.replace("\"", "\\\"");
 
-            //ENVIAR LA PETICIÓN 
+            // CONSTRUCCIÓN DEL JSON
+            String jsonBody = String.format(
+                "{" +
+                    "\"chat_id\": \"%s\"," +
+                    "\"photo\": \"%s\"," +
+                    "\"caption\": \"%s\"," +
+                    "\"parse_mode\": \"HTML\"," +
+                    "\"reply_markup\": {" +
+                        "\"inline_keyboard\": [[ {" +
+                            "\"text\": \"RECLAMAR OFERTA \"," +
+                            "\"url\": \"%s\"" +
+                        "} ]]" +
+                    "}" +
+                "}",
+                CHAT_ID, urlImagen, captionSegura, urlOferta
+            );
+
+            // PREPARAR EL ENVÍO 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(urlString))
-                    .GET()
+                    .uri(URI.create("https://api.telegram.org/bot" + TOKEN + "/sendPhoto")) // Endpoint de Fotos
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
-            //ENVIAR
+            // ENVIAR
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            //CONFIRMAR
+            // CONFIRMAR
             if (response.statusCode() == 200) {
-                System.out.println("Mensaje enviado a Telegram correctamente.");
+                System.out.println("✅ Foto y botón enviados correctamente.");
             } else {
-                System.out.println("Telegram nos ha rechazado. Código: " + response.statusCode());
+                System.out.println("⚠️ Telegram rechazó el envío. Código: " + response.statusCode());
                 System.out.println("Respuesta: " + response.body());
             }
 
         } catch (Exception e) {
-            System.out.println("Error intentando enviar mensaje: " + e.getMessage());
+            System.out.println("❌ Error crítico enviando foto: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
