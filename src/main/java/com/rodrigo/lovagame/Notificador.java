@@ -15,7 +15,7 @@ public class Notificador {
     public void enviarFoto(String urlImagen, String textoCaption, String urlOferta) {
         try {
             if (TOKEN == null || CHAT_ID == null) {
-                System.out.println("❌ ERROR: Faltan las variables TOKEN o CHAT_ID.");
+                System.out.println("ERROR: Faltan las variables TOKEN o CHAT_ID.");
                 return;
             }
 
@@ -51,14 +51,14 @@ public class Notificador {
 
             // CONFIRMAR
             if (response.statusCode() == 200) {
-                System.out.println("✅ Foto y botón enviados correctamente.");
+                System.out.println("Foto y botón enviados correctamente.");
             } else {
-                System.out.println("⚠️ Telegram rechazó el envío. Código: " + response.statusCode());
+                System.out.println("Telegram rechazó el envío. Código: " + response.statusCode());
                 System.out.println("Respuesta: " + response.body());
             }
 
         } catch (Exception e) {
-            System.out.println("❌ Error crítico enviando foto: " + e.getMessage());
+            System.out.println("Error crítico enviando foto: " + e.getMessage());
             e.printStackTrace();
         }
     }
