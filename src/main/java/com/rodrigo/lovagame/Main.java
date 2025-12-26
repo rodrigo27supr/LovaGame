@@ -12,15 +12,11 @@ import java.net.http.HttpResponse;
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("Iniciando LovaGame con sistema de memoria...");
+        System.out.println("Iniciando LovaGame v1.1 (Modo PRO: Foto + Botón)...");
 
-        //Instanciamos las clases 
         Notificador notificador = new Notificador();
         GestorHistorial gestor = new GestorHistorial();
-
-        // Cargamos los IDs que ya hemos enviado 
         Set<String> idsEnviados = gestor.cargarIdsEnviados();
-        System.out.println("Memoria cargada. Juegos ya enviados anteriormente: " + idsEnviados.size());
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -29,49 +25,63 @@ public class Main {
                 .build();
 
         try {
-            System.out.println("Buscando juegos nuevos en internet...");
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
             ObjectMapper mapper = new ObjectMapper();
             List<Juego> juegos = mapper.readValue(response.body(), new TypeReference<List<Juego>>(){});
 
-            int nuevosEncontrados = 0;
+            int nuevos = 0;
 
-            // Recorremos los juegos y filtramos
             for (Juego juego : juegos) {
-                // ID a texto para buscarlo en el historial
                 String idJuego = String.valueOf(juego.id);
 
-                // Si el ID NO está en la lista de enviados
                 if (!idsEnviados.contains(idJuego)) {
+                    System.out.println("NUEVO REGALO: " + juego.title);
 
-                    System.out.println("NUEVO JUEGO DETECTADO -> " + juego.title);
+                    // --- ETIQUETAS ---
+                    String hashtags = "#JuegoGratis";
+                    if (juego.platform != null) {
+                        if (juego.platform.contains("Steam")) hashtags += " #Steam";
+                        else if (juego.platform.contains("Epic")) hashtags += " #EpicGames";
+                        else if (juego.platform.contains("GOG")) hashtags += " #GOG";
+                        else if (juego.platform.contains("Itch")) hashtags += " #Itchio";
+                    }
+                    if (juego.type != null && juego.type.contains("DLC")) hashtags += " #DLC";
 
-                    String mensaje = "NUEVO GRATIS: \n" +
-                            juego.title + "\n" +
-                            "Valor: " + juego.worth + "\n" +
-                            "Link: " + juego.url;
+                    // --- PRECIO ---
+                    String precio = (juego.worth != null && !juego.worth.equals("N/A")) ? juego.worth : "de Pago";
 
-                    notificador.enviar(mensaje);
+                    // --- DESCRIPCIÓN  ---
+                    String desc = "¡Aprovecha antes de que expire!";
+                    if (juego.description != null && !juego.description.isEmpty()) {
+                         desc = juego.description.length() > 100 ? juego.description.substring(0, 100) + "..." : juego.description;
+                    }
 
-                    //  Meter ID al historial (lo mejoraré en un futuro)
+                    // --- EL TEXTO ---
+                    // Nota: Aquí NO ponemos el link, porque el link irá en el BOTÓN
+                    String caption = "<b>NUEVO REGALO DETECTADO</b>\n\n" +
+                                     "<b>" + juego.title + "</b>\n" +
+                                     "<b>Valor:</b> <s>" + precio + "</s>  <b>GRATIS</b>\n" +
+                                     "" + desc + "\n\n" +
+                                     "" + hashtags;
+
+                    // --- IMAGEN ---
+                    // Si no tiene imagen, usamos una por defecto de GamerPower
+                    String imagenParaEnviar = (juego.image != null) ? juego.image : "https://www.gamerpower.com/img/gamerpower-social-share.jpg";
+
+                    // --- ENVIAR  ---
+                    notificador.enviarFoto(imagenParaEnviar, caption, juego.url);
+                    
+                    // Guardar y contar
                     gestor.guardarId(idJuego);
-
-                    nuevosEncontrados++;
-
-                    // Pausa para no petar Telegram
-                    Thread.sleep(1000);
+                    nuevos++;
+                    
+              
                 }
             }
 
-            if (nuevosEncontrados == 0) {
-                System.out.println("No hay juegos nuevos. Todo está al día.");
-            } else {
-                System.out.println("Proceso finalizado. Se enviaron " + nuevosEncontrados + " alertas.");
-            }
+            if (nuevos == 0) System.out.println("No hay juegos nuevos. Todo está al día.");
 
         } catch (Exception e) {
-            System.out.println("Error en la ejecución: " + e.getMessage());
             e.printStackTrace();
         }
     }
