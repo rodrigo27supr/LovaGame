@@ -33,6 +33,17 @@ En este proyecto he puesto en práctica:
 * **GitHub Actions:** Automatización de tareas en la nube.
 * **Seguridad:** Gestión segura de tokens y contraseñas (Secrets).
 
+---
+
+## Versión 1.1
+He actualizado el bot con mejoras visuales
+
+* **Soporte Multimedia:** Ahora las notificaciones incluyen la **portada oficial** del juego.
+* **Botones Interactivos:** Se ha añadido un botón **"Reclamar Oferta"** debajo de cada mensaje para ir directo a la tienda.
+* **Optimización:** Código más limpio y eficiente.
+
+---
+
 ## El resultado final
 Si tienes curiosidad, puedes ver el bot funcionando en tiempo real en mi canal de difusión:
  **(https://t.me/lovagame_rodrigo)**
