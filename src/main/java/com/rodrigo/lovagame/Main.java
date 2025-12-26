@@ -65,7 +65,6 @@ public class Main {
                                      "" + hashtags;
 
                     // --- IMAGEN ---
-                    // Si no tiene imagen, usamos una por defecto de GamerPower
                     String imagenParaEnviar = (juego.image != null) ? juego.image : "https://www.gamerpower.com/img/gamerpower-social-share.jpg";
 
                     // --- ENVIAR  ---
