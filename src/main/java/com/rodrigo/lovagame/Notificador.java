@@ -9,7 +9,7 @@ public class Notificador {
 
     // GitHub Secrets
     private static final String TOKEN = System.getenv("TELEGRAM_TOKEN");
-    private static final String CHAT_ID = System.getenv("https://t.me/lovagame_rodrigo");
+    private static final String CHAT_ID = System.getenv("@RodrigoGameBot");
 
     // FOTO + TEXTO + BOTN
     public void enviarFoto(String urlImagen, String textoCaption, String urlOferta) {
