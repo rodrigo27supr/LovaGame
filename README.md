@@ -16,7 +16,7 @@ He seguido los siguientes pasos para que fuera un proyecto lo más didáctico po
 
 - El código ha sido escrito por mí, paso a paso.
 
-- He comentado varias líneas del código con ayuda de la IA para explicarme el porqué y para asegurarme de entender la lógica detrás de cada bucle, cada conexión y cada archivo.
+- He comentado varias líneas del código con ayuda de la IA para explicarme el porqué y para asegurarme de entender la lógica de los bucles, las conexiones y algunos archivos utilizados.
 
 - No quería que se quedara en mi ordenador, así que aprendí a configurar GitHub Actions para tenerlo en la nube.
 
@@ -40,8 +40,8 @@ En este proyecto he puesto en práctica:
 ## Versión 1.1
 He actualizado el bot con mejoras visuales
 
-* **Soporte Multimedia:** Ahora las notificaciones incluyen la **portada oficial** del juego.
-* **Botones Interactivos:** Se ha añadido un botón **"Reclamar Oferta"** debajo de cada mensaje para ir directo a la tienda.
+* **Soporte Multimedia:** Ahora las notificaciones incluyen la **portada** del juego.
+* **Botones Interactivos:** He añadido un botón **"Reclamar Oferta"** debajo de cada mensaje para ir directo a la tienda.
 * **Optimización:** Código más limpio y eficiente.
 
 ---
