@@ -1,3 +1,5 @@
+![LovaGame Logo](LOVAGAME1.png)
+[Read this in Spanish](README.md)
 # LovaGame: My First Java Project
 ![Bot Status](https://github.com/rodrigo27supr/LovaGame/actions/workflows/ejecutar.yml/badge.svg)
 
