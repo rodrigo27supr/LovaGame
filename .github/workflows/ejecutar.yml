@@ -1,38 +1,69 @@
 name: Buscador de Ofertas LovaGame
 
 on:
-  workflow_dispatch: # Permite botón manual
+  workflow_dispatch: # Permite lanzarlo a mano
   schedule:
-    - cron: '5 * * * *'  # Ejecuta en el minuto 5 de cada hora
+    - cron: '5 * * * *' # Minuto 5 de cada hora (GitHub puede retrasarlo o saltarse alguna)
+
+permissions:
+  contents: write # Para guardar el historial
+  actions: write  # Para mantener activo el horario (último paso)
+
+# Nunca dos ejecuciones a la vez: se pisarían el historial.
+concurrency:
+  group: lovagame
+  cancel-in-progress: false
 
 jobs:
   buscar-juegos:
     runs-on: ubuntu-latest
-    # Necesitamos permisos para que el bot pueda hacer el "push" al historial.txt
-    permissions:
-      contents: write
+    timeout-minutes: 15
 
     steps:
-      - name: Checkout del código
-        uses: actions/checkout@v4 # Actualizado a v4
+      - name: Descargar el código
+        uses: actions/checkout@v5
+
+      # El historial de avisos vive en la rama "historial", así los commits
+      # automáticos del bot no se mezclan con los míos en main.
+      - name: Descargar el historial
+        uses: actions/checkout@v5
+        with:
+          ref: historial
+          path: estado
 
       - name: Instalar Java
-        uses: actions/setup-java@v4 # Actualizado a v4
+        uses: actions/setup-java@v5
         with:
-          distribution: 'temurin' # He cambiado a temurin, suele dar menos líos en GitHub
+          distribution: 'temurin'
           java-version: '17'
-          cache: 'maven' # <<--- ESTO ES LO MÁS IMPORTANTE. Evita el error 403.
+          cache: 'maven' # Guarda las dependencias entre ejecuciones
 
       - name: Ejecutar LovaGame
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: "@lovagame_rodrigo"
-        run: mvn --batch-mode clean compile exec:java -Dexec.mainClass="com.rodrigo.lovagame.Main"
+          HISTORIAL_PATH: estado/historial.txt
+        run: mvn --batch-mode --quiet compile exec:java
 
-      - name: Guardar cambios en historial.txt
+      - name: Guardar el historial
+        if: always()
+        working-directory: estado
         run: |
-          git config --global user.name 'LovaGame Bot'
-          git config --global user.email 'bot@noreply.github.com'
+          git config user.name 'LovaGame Bot'
+          git config user.email 'bot@noreply.github.com'
           git add historial.txt
-          # El commit solo se hace si hay cambios reales en el archivo
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Actualizando historial" && git push)
+          # Solo hay commit si han entrado IDs nuevos
+          if git diff --staged --quiet; then
+            echo "Sin cambios en el historial."
+          else
+            git commit -m "Actualizar historial"
+            git push
+          fi
+
+      # GitHub desactiva los horarios de los repos públicos tras 60 días sin
+      # actividad. Como el bot ya no hace commits en main, lo reactivo por la API.
+      - name: Mantener activo el horario
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method PUT "repos/${{ github.repository }}/actions/workflows/ejecutar.yml/enable"
